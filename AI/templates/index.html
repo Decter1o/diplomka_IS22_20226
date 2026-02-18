@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Обнаружение номерных знаков - В реальном времени</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        #video_feed {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: #222;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #999;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .info {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .info-text {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .bullet {
+            margin-left: 15px;
+            margin-bottom: 8px;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 5px;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .status-text {
+            font-size: 13px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>KAD v1.0</h1>
+        <p class="subtitle">Обработка видео в реальном времени (YOLO)</p>
+        
+        <div class="video-container">
+            <img id="video_feed" src="{{ url_for('video_feed') }}" alt="Video Stream">
+            <div class="loading">⏳ Загрузка...</div>
+        </div>
+        
+        <div class="info">
+            <div class="info-title">ℹ️ Информация</div>
+            <div class="info-text">
+                <div class="bullet">📹 Видео обрабатывается кадр за кадром</div>
+                <div class="bullet">🎯 Используется модель YOLO для обнаружения номеров</div>
+                <div class="bullet">✨ Обнаруженные номера выделены на видео</div>
+                <div class="bullet">⚡ Масштабирование для оптимизации скорости обработки</div>
+            </div>
+            
+            <div class="status">
+                <div class="status-dot"></div>
+                <div class="status-text">Видео обрабатывается...</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
