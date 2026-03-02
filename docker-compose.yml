@@ -13,3 +13,14 @@ services:
     volumes:
       - ./mediamtx/mediamtx.yml:/mediamtx.yml
       - ./recordings:/recordings
+  
+  db:
+    image: postgres:latest
+    container_name: postgreSQL
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "${DB_PORTS}:5432"
