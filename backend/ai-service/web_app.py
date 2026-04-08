@@ -16,7 +16,7 @@ from flask import Flask, render_template, Response, jsonify, request
 from paddleocr import PaddleOCR
 
 app = Flask(__name__)
-model = YOLO("model/best.pt")
+model = YOLO("ai-model/best.pt")
 
 OCR_DEBUG = False
 OCR_WORKERS = 1
