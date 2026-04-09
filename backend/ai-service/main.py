@@ -1,6 +1,7 @@
 import httpx
 import threading
 from fastapi import FastAPI
+from core.core import process_camera
 
 app = FastAPI()
 
@@ -19,7 +20,13 @@ async def startup_event():
                 else:
                     print("Camera name is missing in the response item.")
 
-            threads = [threading.Tread(target = , args=(name, url)) for name, url in camera_dictionary.items()]
+            threads = [threading.Thread(target=process_camera, args=(name, url)) for name, url in camera_dictionary.items()]
+
+            for t in threads:
+                t.start()
+
+            for t in threads:
+                t.join()
 
 
     except:

@@ -9,7 +9,7 @@ class DB:
     def get_connection(self):
         try:
             conn = psycopg.connect(
-                host=os.getenv("HOST", "db"),
+                host=os.getenv("DB_HOST", "db"),
                 user=os.getenv("DB_USER"),
                 password=os.getenv("DB_PASSWORD"),
                 dbname=os.getenv("DB_NAME"),
