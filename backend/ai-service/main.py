@@ -17,17 +17,10 @@ async def startup_event():
                 name = item.get('name')
                 if name is not None:
                     camera_dictionary[name] = f"rtsp://mediamtx:8554/{name}"
-                else:
-                    print("Camera name is missing in the response item.")
-
-            threads = [threading.Thread(target=process_camera, args=(name, url)) for name, url in camera_dictionary.items()]
-
-            for t in threads:
-                t.start()
-
-            for t in threads:
-                t.join()
-
-
+            
+            # Просто вызовите process_camera напрямую без создания потоков
+            for name, url in camera_dictionary.items():
+                process_camera(name, url)  # Запускает daemon потоки и возвращает
+                
     except:
         print("Error fetching camera data from mediamtx")

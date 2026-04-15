@@ -464,4 +464,4 @@ class PlateProcessor:
 def process_camera(name, url):
     processor = PlateProcessor(url, name)
     processor.start_processing()
-    return processor
+    
