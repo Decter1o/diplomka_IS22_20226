@@ -1,0 +1,6 @@
+[broker-consumer-config]
+BOOTSTRAP_SERVERS = "localhost:9092"
+TOPIC = "plate_detections"
+GROUP_ID = "detections_group"
+ENABLE_AUTO_COMMIT = false
+AUTO_OFFSET_RESET = "earliest"

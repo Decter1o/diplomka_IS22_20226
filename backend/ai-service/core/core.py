@@ -18,12 +18,21 @@ from collections import Counter
 from .logger import PlateLogger
 
 class PlateProcessor:
+    """Класс для детекции автомобильных номеров в видеопотоке, их сохранения и распознавания OCR.
+
+    Основные обязанности:
+    - запуск детектора (YOLO) для поиска номерных знаков;
+    - управление трекингом обнаруженных объектов;
+    - извлечение кропов номеров и помещение их в очередь для воркеров;
+    - запуск PaddleOCR для распознавания текста и сохранение результатов в CSV.
+    """
+
     def __init__(self, video_source, name="default"):
         self.name = name
         self.video_source = video_source
 
         # Загрузка конфигурации
-        config_path = os.path.join(os.path.dirname(__file__), 'comfig.toml')
+        config_path = os.path.join(os.path.dirname(__file__), 'config.toml')
         with open(config_path, 'rb') as f:
             config = tomllib.load(f)
 
@@ -77,6 +86,15 @@ class PlateProcessor:
         self.worker_threads = []
 
     def preprocess_plate(self, img):
+        """Предобработка изображения кропа номерного знака для повышения качества OCR.
+
+        Входные параметры:
+        - img: BGR-изображение (numpy.ndarray).
+
+        Возвращает:
+        - бинаризованное/обработанное изображение (numpy.ndarray), готовое для распознавания.
+        """
+
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         gray = cv2.bilateralFilter(gray, 9, 75, 75)
         gray = cv2.resize(gray, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
@@ -92,23 +110,49 @@ class PlateProcessor:
         return thresh
 
     def validate_plate(self, text):
+        """Очистка и валидация результата OCR в формате номеров.
+
+        Удаляет все символы, кроме заглавных латинских букв и цифр,
+        и возвращает строку только если её длина >= 2, иначе пустую строку.
+        """
+
         text = re.sub(r'[^A-Z0-9]', '', text)
         if len(text) >= 2:
             return text
         return ""
 
     def fix_common_ocr_errors(self, text):
+        """Исправляет часто встречающиеся ошибки распознавания символов.
+
+        Заменяет похожие символы (например, O->0, I->1 и т.п.) по предустановленному словарю.
+        Возвращает исправленную строку.
+        """
+
         replacements = {
             'I': '1', 'l': '1', 'O': '0', 'B': '8', 'S': '5', 'Z': '2', 'G': '9', 'U': 'V'
         }
         return "".join(replacements.get(c, c) for c in text)
 
     def pick_best_text(self, history):
+        """Выбирает наиболее часто встречающийся вариант распознанного текста.
+
+        Принимает список строк `history` и возвращает наиболее частый элемент.
+        Если история пуста — возвращает пустую строку.
+        """
+
         if not history:
             return ""
         return Counter(history).most_common(1)[0][0]
 
     def extract_paddle_text(self, results):
+        """Извлекает текст и усреднённую уверенность из результата PaddleOCR.
+
+        Поддерживает несколько возможных форматов возвращаемых данных (dict/list),
+        собирает фрагменты текста по порядку и вычисляет среднюю confidence.
+
+        Возвращает кортеж `(ocr_text, avg_confidence)`.
+        """
+
         if not results:
             return "", 0.0
         parts = []
@@ -144,6 +188,22 @@ class PlateProcessor:
         return ocr_text, avg_confidence
 
     def perform_ocr_and_save(self, crop_img, tid, ts):
+        """Выполняет OCR для переданного кропа, применяет fallback-предобработку при необходимости и сохраняет результат.
+
+        Аргументы:
+        - crop_img: BGR-изображение кропа номера (numpy.ndarray).
+        - tid: идентификатор трека/объекта.
+        - ts: временная метка (ms) сохранения.
+
+        Поведение:
+        - запускает PaddleOCR на исходном изображении;
+        - если уверенность низкая или яркость вне диапазона — выполняет `preprocess_plate` и повторяет OCR;
+        - исправляет распространённые ошибки (`fix_common_ocr_errors`) и валидирует текст (`validate_plate`);
+        - при успешном распознавании дописывает строку в CSV `ocr_results.csv`.
+
+        Возвращает распознанную строку (или пустую строку при неудаче).
+        """
+
         try:
             self.logger.info(f"OCR START for {self.name} ID={tid}, crop shape={crop_img.shape}")
             processed1 = cv2.resize(crop_img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
@@ -196,10 +256,25 @@ class PlateProcessor:
             return ''
 
     def center(self, box):
+        """Возвращает координаты центра прямоугольника `box`.
+
+        `box` — кортеж/список (x1, y1, x2, y2). Возвращает (cx, cy) как целочисленные координаты.
+        """
+
         x1, y1, x2, y2 = box
         return ((x1 + x2) // 2, (y1 + y2) // 2)
 
     def expand_box(self, box, frame_h, frame_w, padding=60):
+        """Расширяет прямоугольник `box` на `padding` пикселей по каждой стороне, ограничивая рамками кадра.
+
+        Параметры:
+        - box: (x1, y1, x2, y2)
+        - frame_h, frame_w: высота и ширина кадра
+        - padding: число пикселей для расширения
+
+        Возвращает новый безопасный прямоугольник (x1, y1, x2, y2).
+        """
+
         x1, y1, x2, y2 = box
         x1 = max(0, x1 - padding)
         y1 = max(0, y1 - padding)
@@ -208,6 +283,13 @@ class PlateProcessor:
         return (x1, y1, x2, y2)
 
     def process_video(self):
+        """Главный цикл обработки видео.
+
+        Последовательно читает кадры, запускает детекцию YOLO, поддерживает треки объектов,
+        при наступлении условий сохраняет кропы в очередь `crop_queue` для последующей OCR-обработки.
+        Цикл работает бесконечно (поток-демон) до вызова `stop_processing`.
+        """
+
         frame_id = 0
 
         def iou(a, b):
@@ -379,6 +461,14 @@ class PlateProcessor:
                 continue
 
     def crop_saver_worker(self):
+        """Воркeр, который читает кропы из очереди, сохраняет изображения и запускает OCR.
+
+        Поведение:
+        - берёт элементы из `self.crop_queue` (crop, tid, ts, full_thumb?);
+        - при наличии `full_thumb` сохраняет оба файлы в `self.plates_dir`;
+        - вызывает `perform_ocr_and_save` и обновляет историю OCR в соответствующем треке.
+        """
+
         self.logger.info(f"Worker started for {self.name}")
         worker_count = 0
         while True:
@@ -438,6 +528,12 @@ class PlateProcessor:
                 continue
 
     def start_processing(self):
+        """Запускает фоновые потоки для обработки видео и OCR-воркеры.
+
+        - Создаёт поток `process_video` (демон) и несколько OCR-воркеров в соответствии с `OCR_WORKERS`.
+        - Логирует старт и пути к CSV/папке с кропами.
+        """
+
         self.logger.info(f"Starting video processing for {self.name}")
         self.logger.info(f"Video: {self.video_source}")
         self.logger.info(f"Total frames: {self.total_frames}, FPS: {self.fps}")
@@ -456,12 +552,22 @@ class PlateProcessor:
         self.logger.info(f"Video processing started for {self.name}")
 
     def stop_processing(self):
+        """Останавливает захват видео (освобождает `VideoCapture`) и логирует остановку.
+
+        Примечание: потоки являются демонами, поэтому при завершении процесса Python они также остановятся.
+        """
+
         if self.cap:
             self.cap.release()
         self.logger.info(f"Processing stopped for {self.name}")
 
 
 def process_camera(name, url):
+    """Утилитная функция для быстрого запуска обработки камеры.
+
+    Создаёт экземпляр `PlateProcessor` и запускает обработку.
+    """
+
     processor = PlateProcessor(url, name)
     processor.start_processing()
     
