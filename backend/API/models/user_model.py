@@ -12,6 +12,3 @@ class User(BaseModel):
     username: str
     password: str
     role: UserRole = UserRole.user
-
-    def __init__(self, username: str, password: str, role: UserRole = UserRole.user, uuid: Optional[UUID] = None):
-        super().__init__(uuid=uuid, username=username, password=password, role=role)

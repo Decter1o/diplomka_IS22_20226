@@ -6,3 +6,10 @@ OCR_BRIGHTNESS_LOW = 40
 OCR_BRIGHTNESS_HIGH = 220
 ROI_RATIO = 0.15
 INACTIVE_FRAMES = 40
+
+[minio]
+ENDPOINT = "minio:9000"
+ACCESS_KEY = "minioadmin"
+SECRET_KEY = "minioadmin"
+BUCKET = "plates"
+SECURE = false

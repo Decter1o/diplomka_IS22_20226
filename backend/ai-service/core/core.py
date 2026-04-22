@@ -16,6 +16,8 @@ from ultralytics import YOLO
 from paddleocr import PaddleOCR
 from collections import Counter
 from .logger import PlateLogger
+from ..broker.producer_kafka import KafkaManager
+from ..storage.minio_client import MinioStorage
 
 class PlateProcessor:
     """Класс для детекции автомобильных номеров в видеопотоке, их сохранения и распознавания OCR.
@@ -68,8 +70,9 @@ class PlateProcessor:
 
         self.current_frame_num = 0
         self.crop_queue = queue.Queue(maxsize=50)
-        self.plates_dir = os.path.join(os.path.dirname(__file__), '..', 'plates')
-        os.makedirs(self.plates_dir, exist_ok=True)
+
+        # Инициализация MinIO для хранения фото номеров
+        self.minio_storage = MinioStorage(logger=self.logger)
 
         self.ocr_csv_path = os.path.join(os.path.dirname(__file__), '..', 'ocr_results.csv')
         self.csv_lock = threading.Lock()
@@ -84,6 +87,9 @@ class PlateProcessor:
 
         self.processing_thread = None
         self.worker_threads = []
+        
+        # Инициализация Kafka Manager для публикации событий
+        self.kafka_manager = KafkaManager(logger=self.logger)
 
     def preprocess_plate(self, img):
         """Предобработка изображения кропа номерного знака для повышения качества OCR.
@@ -187,7 +193,7 @@ class PlateProcessor:
         avg_confidence = sum(confidences) / len(confidences) if confidences else 0.0
         return ocr_text, avg_confidence
 
-    def perform_ocr_and_save(self, crop_img, tid, ts):
+    def perform_ocr_and_save(self, crop_img, tid, ts, crop_url='', full_url=''):
         """Выполняет OCR для переданного кропа, применяет fallback-предобработку при необходимости и сохраняет результат.
 
         Аргументы:
@@ -245,6 +251,19 @@ class PlateProcessor:
                         writer = csv.writer(f)
                         writer.writerow([self.name, tid, ts, ocr_text, f"{avg_confidence:.3f}"])
                 self.logger.info(f"SUCCESS for {self.name} ID={tid}: '{ocr_text}' (conf={avg_confidence:.2f})")
+                
+                # Публикуем событие в Kafka
+                try:
+                    self.kafka_manager.publish_detection(
+                        camera_name=self.name,
+                        plate_number=ocr_text,
+                        confidence=float(avg_confidence),
+                        timestamp=ts,
+                        plates_photo_url=crop_url,
+                        full_photo_url=full_url,
+                    )
+                except Exception as e:
+                    self.logger.error(f"Failed to publish detection to Kafka: {e}")
             else:
                 self.logger.warning(f"Text validation failed for {self.name} ID={tid}")
 
@@ -492,26 +511,27 @@ class PlateProcessor:
                     self.logger.warning(f"Worker {self.name} crop too small: {crop.shape[1]} (need >= 80)")
                     continue
 
+                crop_url = ''
+                full_url = ''
+
                 if full_thumb is not None:
                     try:
-                        crop_filename = f"plate_{self.name}_{tid}_{ts}.jpg"
-                        crop_path = os.path.join(self.plates_dir, crop_filename)
                         _, crop_buf = cv2.imencode('.jpg', crop, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
-                        with open(crop_path, 'wb') as f:
-                            f.write(crop_buf.tobytes())
-
-                        full_filename = f"plate_{self.name}_{tid}_{ts}_full.jpg"
-                        full_path = os.path.join(self.plates_dir, full_filename)
                         _, full_buf = cv2.imencode('.jpg', full_thumb, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
-                        with open(full_path, 'wb') as f:
-                            f.write(full_buf.tobytes())
 
-                        self.logger.info(f"Worker {self.name} saved files for ID={tid}: {crop_filename}, {full_filename}")
+                        crop_url, full_url = self.minio_storage.upload_plate_pair(
+                            crop_buf=crop_buf.tobytes(),
+                            full_buf=full_buf.tobytes(),
+                            camera_name=self.name,
+                            tid=tid,
+                            ts=ts,
+                        )
+                        self.logger.info(f"Worker {self.name} uploaded to MinIO for ID={tid}: crop={crop_url}")
                     except Exception as e:
-                        self.logger.error(f"Worker {self.name} error saving files for ID={tid}: {e}")
+                        self.logger.error(f"Worker {self.name} error uploading to MinIO for ID={tid}: {e}")
 
                 self.logger.debug(f"Worker {self.name} starting OCR for ID={tid}")
-                ocr_text = self.perform_ocr_and_save(crop, tid, ts)
+                ocr_text = self.perform_ocr_and_save(crop, tid, ts, crop_url=crop_url, full_url=full_url)
                 self.logger.debug(f"Worker {self.name} OCR result: '{ocr_text}'")
 
                 if ocr_text and tid in self.tracks:
@@ -559,6 +579,14 @@ class PlateProcessor:
 
         if self.cap:
             self.cap.release()
+        
+        # Закрываем Kafka соединение
+        if self.kafka_manager:
+            try:
+                self.kafka_manager.close()
+            except Exception as e:
+                self.logger.error(f"Error closing KafkaManager: {e}")
+        
         self.logger.info(f"Processing stopped for {self.name}")
 
 
@@ -570,4 +598,3 @@ def process_camera(name, url):
 
     processor = PlateProcessor(url, name)
     processor.start_processing()
-    

@@ -1,5 +1,5 @@
-[broker-consumer-config]
-BOOTSTRAP_SERVERS = "localhost:9092"
+[broker]
+BOOTSTRAP_SERVERS = "broker:9092"
 TOPIC = "plate_detections"
 GROUP_ID = "detections_group"
 ENABLE_AUTO_COMMIT = false
