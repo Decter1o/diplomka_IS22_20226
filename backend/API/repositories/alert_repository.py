@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 from models.alert_model import Alert, AlertType
 from .db import DB
@@ -33,15 +33,56 @@ class AlertRepository(DB):
                 row = cur.fetchone()
                 self.conn.commit()
                 if row:
-                    return Alert(
-                        id=row[0],
-                        driver_id=row[1],
-                        plate_id=row[2],
-                        detection_id=row[3],
-                        alert_type=row[4],
-                        created_at=row[5],
-                    )
+                    return self._row_to_alert(row)
         except Exception as e:
             self.conn.rollback()
             print(f"AlertRepository.create error: {e}")
         return None
+
+    def get_all(self, limit: int = 100, offset: int = 0) -> List[Alert]:
+        """Возвращает список алертов, свежие первыми."""
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, driver_id, plate_id, detection_id, alert_type, created_at
+                    FROM alerts
+                    ORDER BY created_at DESC
+                    LIMIT %s OFFSET %s
+                    """,
+                    (limit, offset)
+                )
+                return [self._row_to_alert(row) for row in cur.fetchall()]
+        except Exception as e:
+            print(f"AlertRepository.get_all error: {e}")
+        return []
+
+    def get_by_type(self, alert_type: AlertType, limit: int = 100, offset: int = 0) -> List[Alert]:
+        """Возвращает алерты конкретного типа."""
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, driver_id, plate_id, detection_id, alert_type, created_at
+                    FROM alerts
+                    WHERE alert_type = %s
+                    ORDER BY created_at DESC
+                    LIMIT %s OFFSET %s
+                    """,
+                    (alert_type.value, limit, offset)
+                )
+                return [self._row_to_alert(row) for row in cur.fetchall()]
+        except Exception as e:
+            print(f"AlertRepository.get_by_type error: {e}")
+        return []
+
+    @staticmethod
+    def _row_to_alert(row) -> Alert:
+        return Alert(
+            id=row[0],
+            driver_id=row[1],
+            plate_id=row[2],
+            detection_id=row[3],
+            alert_type=row[4],
+            created_at=row[5],
+        )

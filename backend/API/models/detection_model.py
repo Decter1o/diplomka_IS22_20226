@@ -9,5 +9,4 @@ class Detection(BaseModel):
     camera_id: UUID
     detection_time: datetime
     plates_photo_url: Optional[str] = None
-    
-    
+    full_photo_url: Optional[str] = None

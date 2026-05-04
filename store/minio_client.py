@@ -6,7 +6,7 @@ from minio.error import S3Error
 
 
 def _load_config():
-    config_path = os.path.join(os.path.dirname(__file__), 'config.toml')
+    config_path = os.path.join(os.path.dirname(__file__), 'minio_config.toml')
     with open(config_path, 'rb') as f:
         return tomllib.load(f)
 

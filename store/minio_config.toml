@@ -1,0 +1,6 @@
+[minio]
+ENDPOINT = "minio:9000"
+ACCESS_KEY = "minioadmin"
+SECRET_KEY = "minioadmin"
+BUCKET = "plates"
+SECURE = false

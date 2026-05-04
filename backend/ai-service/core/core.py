@@ -17,7 +17,7 @@ from paddleocr import PaddleOCR
 from collections import Counter
 from .logger import PlateLogger
 from ..broker.producer_kafka import KafkaManager
-from ..storage.minio_client import MinioStorage
+from ....store.minio_client import MinioStorage
 
 class PlateProcessor:
     """Класс для детекции автомобильных номеров в видеопотоке, их сохранения и распознавания OCR.

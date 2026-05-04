@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 from models.stolen_vehicle_model import StolenVehicle
 from .db import DB
@@ -17,17 +16,29 @@ class StolenVehicleRepository(DB):
         try:
             with self.conn.cursor() as cur:
                 cur.execute(
-                    """
-                    SELECT 1 FROM stolen_vehicles
-                    WHERE plate_number = %s
-                    LIMIT 1
-                    """,
+                    "SELECT 1 FROM stolen_vehicles WHERE plate_number = %s LIMIT 1",
                     (plate_number,)
                 )
                 return cur.fetchone() is not None
         except Exception as e:
             print(f"StolenVehicleRepository.is_stolen error: {e}")
         return False
+
+    def get_all(self) -> List[StolenVehicle]:
+        """Возвращает все записи об угнанных авто."""
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id, plate_number, reported_at, description
+                    FROM stolen_vehicles
+                    ORDER BY reported_at DESC
+                    """
+                )
+                return [self._row_to_stolen(row) for row in cur.fetchall()]
+        except Exception as e:
+            print(f"StolenVehicleRepository.get_all error: {e}")
+        return []
 
     def get_by_number(self, plate_number: str) -> Optional[StolenVehicle]:
         """Возвращает запись об угнанном авто по номеру или None."""
@@ -44,12 +55,7 @@ class StolenVehicleRepository(DB):
                 )
                 row = cur.fetchone()
                 if row:
-                    return StolenVehicle(
-                        id=row[0],
-                        plate_number=row[1],
-                        reported_at=row[2],
-                        description=row[3],
-                    )
+                    return self._row_to_stolen(row)
         except Exception as e:
             print(f"StolenVehicleRepository.get_by_number error: {e}")
         return None
@@ -70,12 +76,7 @@ class StolenVehicleRepository(DB):
                 row = cur.fetchone()
                 self.conn.commit()
                 if row:
-                    return StolenVehicle(
-                        id=row[0],
-                        plate_number=row[1],
-                        reported_at=row[2],
-                        description=row[3],
-                    )
+                    return self._row_to_stolen(row)
         except Exception as e:
             self.conn.rollback()
             print(f"StolenVehicleRepository.create error: {e}")
@@ -95,3 +96,12 @@ class StolenVehicleRepository(DB):
             self.conn.rollback()
             print(f"StolenVehicleRepository.delete error: {e}")
         return False
+
+    @staticmethod
+    def _row_to_stolen(row) -> StolenVehicle:
+        return StolenVehicle(
+            id=row[0],
+            plate_number=row[1],
+            reported_at=row[2],
+            description=row[3],
+        )
