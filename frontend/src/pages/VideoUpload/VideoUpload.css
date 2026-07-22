@@ -1,0 +1,223 @@
+/* Зона загрузки */
+.vu-zone {
+  border: 2px dashed #ced4da;
+  border-radius: 12px;
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: #fafbfc;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.vu-zone:hover {
+  border-color: #1a3a5c;
+  background: #f0f4f8;
+}
+
+.vu-zone.drag-over {
+  border-color: #0d6efd;
+  background: #e8f0fe;
+}
+
+.vu-zone.uploading {
+  cursor: default;
+  pointer-events: none;
+  border-color: #0d6efd;
+  background: #f0f4f8;
+}
+
+.vu-icon {
+  font-size: 2.8rem;
+  color: #adb5bd;
+  margin-bottom: 4px;
+  transition: color 0.2s;
+}
+
+.vu-zone:hover .vu-icon,
+.vu-zone.drag-over .vu-icon {
+  color: #1a3a5c;
+}
+
+.vu-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Статус задачи */
+.vu-job-status {
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: #fff;
+}
+
+/* Пустое состояние таблицы */
+.vu-empty {
+  text-align: center;
+  padding: 40px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Номерной знак */
+.vu-plate {
+  display: inline-block;
+  font-family: monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 2px 8px;
+  letter-spacing: 1px;
+}
+
+/* Превью фото */
+.vu-thumb {
+  height: 36px;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.vu-thumb:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* История */
+.vu-history-btn {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: border-color 0.15s, background 0.15s;
+  max-width: 260px;
+}
+
+.vu-history-btn:hover {
+  border-color: #1a3a5c;
+  background: #f0f4f8;
+}
+
+.vu-history-btn.active {
+  border-color: #1a3a5c;
+  background: #e8edf2;
+}
+
+/* Lightbox */
+.vu-photo-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.vu-photo-box {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.vu-photo-box img {
+  display: block;
+  max-width: 85vw;
+  max-height: 85vh;
+  border-radius: 4px;
+}
+
+.vu-photo-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Видеоплеер */
+.vu-player-wrap {
+  background: #0d0d0d;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #2a2a2a;
+}
+
+.vu-player-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  background: #1a1a1a;
+  font-size: 0.85rem;
+  color: #ccc;
+  min-width: 0;
+  gap: 0;
+}
+
+.vu-player-header span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vu-player {
+  display: block;
+  width: 100%;
+  max-height: 480px;
+  background: #000;
+}
+
+.vu-player-unsupported {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #888;
+  background: #111;
+  min-height: 140px;
+}
+
+/* Анимация спиннера */
+.spin {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

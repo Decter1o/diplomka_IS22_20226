@@ -6,4 +6,5 @@ class Camera(BaseModel):
     camera_id: Optional[UUID] = None
     name: str
     location: str
+    rtsp_url: Optional[str] = None
     status: bool = True

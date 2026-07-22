@@ -1,0 +1,152 @@
+.archive-page {
+  padding: 20px;
+}
+
+.archive-page h1 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.archive-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.filter-group label {
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+}
+
+.filter-group select,
+.filter-group input[type="date"],
+.filter-group input[type="time"] {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.filter-group input[type="date"] {
+  width: 140px;
+}
+
+.filter-group input[type="time"] {
+  width: 90px;
+}
+
+.btn-archive-search {
+  padding: 8px 18px;
+  background: #1a3a5c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-archive-search:hover:not(:disabled) {
+  background: #0f2439;
+}
+
+.btn-archive-search:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.btn-archive-dl-range {
+  padding: 8px 18px;
+  background: #0d6efd;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-archive-dl-range:hover {
+  background: #0b5ed7;
+}
+
+.archive-status {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 16px;
+}
+
+.archive-info {
+  margin-bottom: 10px;
+  color: #666;
+  font-size: 14px;
+}
+
+.table-container {
+  overflow-x: auto;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.archive-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.archive-table thead {
+  background: #1a3a5c;
+  color: white;
+}
+
+.archive-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  border: none;
+}
+
+.archive-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.archive-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.btn-archive-dl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #1a3a5c;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.btn-archive-dl:hover {
+  background: #0f2439;
+  color: white;
+}

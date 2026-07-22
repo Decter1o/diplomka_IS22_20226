@@ -51,20 +51,22 @@ class KafkaManager:
     
     def publish_detection(self, camera_name: str, plate_number: str,
                          confidence: float, timestamp: str,
-                         plates_photo_url: str = '', full_photo_url: str = ''):
+                         plates_photo_url: str = '', full_photo_url: str = '',
+                         job_id: str = None):
         """
         Публикует событие обнаружения номера в Kafka.
-        
+
         Отправляет JSON сообщение в топик plate_detections с информацией о
         распознанном номере автомобиля, камере и уверенности распознавания.
-        
+
         Args:
             camera_name: Имя камеры/источника видео.
             plate_number: Распознанный номер автомобиля.
             confidence: Уверенность OCR (0.0-1.0).
             timestamp: Временная метка события (ISO 8601 формат).
             plates_photo_url: URL или путь к изображению номера (опционально).
-        
+            job_id: UUID задачи обработки видео (если источник — видеофайл).
+
         Raises:
             Exception: Если возникла ошибка при отправке сообщения.
         """
@@ -77,17 +79,19 @@ class KafkaManager:
                 'plates_photo_url': plates_photo_url,
                 'full_photo_url': full_photo_url,
             }
-            
+            if job_id:
+                payload['job_id'] = job_id
+
             message = json.dumps(payload)
             self._producer.produce(
                 self.topic,
                 value=message.encode('utf-8'),
                 callback=self._delivery_report
             )
-            
+
             # Убедиться, что сообщение отправлено в течение 5 секунд
             self._producer.flush(timeout=5)
-            
+
             if self.logger:
                 self.logger.info(
                     f"Published detection: plate={plate_number}, "
@@ -97,6 +101,55 @@ class KafkaManager:
             if self.logger:
                 self.logger.error(f"Error publishing detection: {e}")
             raise
+
+    def publish_unknown_plate(self, camera_name: str, plate_number: str,
+                             confidence: float, timestamp: str,
+                             plates_photo_url: str = '', full_photo_url: str = '',
+                             job_id: str = None):
+        """
+        Публикует событие обнаружения неопознанного номера в Kafka.
+
+        Отправляет JSON сообщение в топик unknown_plates с информацией о
+        номере, который не прошел валидацию по казахстанским паттернам.
+
+        Args:
+            camera_name: Имя камеры/источника видео.
+            plate_number: Текст, распознанный OCR (не валидный номер).
+            confidence: Уверенность OCR (0.0-1.0).
+            timestamp: Временная метка события (ISO 8601 формат).
+            plates_photo_url: URL изображения номера.
+            full_photo_url: URL полного кадра.
+            job_id: UUID задачи обработки видео (если источник — видеофайл).
+        """
+        try:
+            payload = {
+                'camera': camera_name,
+                'plate_number': plate_number,
+                'confidence': confidence,
+                'timestamp': timestamp,
+                'plates_photo_url': plates_photo_url,
+                'full_photo_url': full_photo_url,
+            }
+            if job_id:
+                payload['job_id'] = job_id
+
+            message = json.dumps(payload)
+            self._producer.produce(
+                'unknown_plates',
+                value=message.encode('utf-8'),
+                callback=self._delivery_report
+            )
+
+            self._producer.flush(timeout=5)
+
+            if self.logger:
+                self.logger.warning(
+                    f"Published unknown plate: text={plate_number}, "
+                    f"camera={camera_name}, confidence={confidence:.3f}"
+                )
+        except Exception as e:
+            if self.logger:
+                self.logger.error(f"Error publishing unknown plate: {e}")
     
     def close(self):
         """Закрывает соединение с Kafka и гарантирует доставку всех сообщений.

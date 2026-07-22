@@ -512,7 +512,7 @@ pathDefaults:
   # Default path settings -> Record
 
   # Record streams to disk.
-  record: false
+  record: yes
   # Path of recording segments.
   # Extension is added automatically.
   # Available variables are %path (path name), %Y %m %d (year, month, day),
@@ -529,10 +529,10 @@ pathDefaults:
   # This prevents RAM exhaustion.
   recordMaxPartSize: 50M
   # Minimum duration of each segment.
-  recordSegmentDuration: 1h
+  recordSegmentDuration: 5m
   # Delete segments after this timespan.
   # Set to 0s to disable automatic deletion.
-  recordDeleteAfter: 1d
+  recordDeleteAfter: 720h
 
   ###############################################
   # Default path settings -> Publisher source (when source is "publisher")
@@ -773,7 +773,7 @@ pathDefaults:
   # * RTSP_PORT: RTSP server port
   # * G1, G2, ...: regular expression groups, if path name is
   #   a regular expression.
-  runOnRecordSegmentComplete:
+  runOnRecordSegmentComplete: 'wget -q -O /dev/null "http://ai-service:8000/recording-webhook?path=$MTX_PATH&segment=$MTX_SEGMENT_PATH&duration=$MTX_SEGMENT_DURATION"'
 
 ###############################################
 # Path settings

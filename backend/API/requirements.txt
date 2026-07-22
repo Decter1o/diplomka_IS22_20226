@@ -1,6 +1,13 @@
-psycopg[binary]
+﻿psycopg[binary]
 python-dotenv
 fastapi
-uvicorn
+pydantic
+uvicorn[standard]
 httpx
 confluent-kafka
+openpyxl
+pandas
+numpy
+python-multipart
+python-jose[cryptography]
+bcrypt

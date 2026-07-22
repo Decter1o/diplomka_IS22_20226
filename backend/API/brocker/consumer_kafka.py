@@ -47,15 +47,29 @@ class PlateConsumer:
         self._thread = None
 
     def _handle(self, payload: dict):
-        """Обогащает payload camera_id и передаёт в DetectionService."""
+        """Обогащает payload source_type/camera_id и передаёт в DetectionService."""
         camera_name = payload.get('camera', '')
+        plate_number = payload.get('plate_number', '')
+        job_id = payload.get('job_id')
 
-        camera = self.camera_repo.get_by_name(camera_name)
-        if not camera:
-            logger.warning(f"Camera '{camera_name}' not found in DB, skipping")
-            return
+        # ── ШАГ 7: Kafka receive ─────────────────────────────────────────
+        print(f"[KAFKA][RECV] номер='{plate_number}' камера='{camera_name}' job_id={job_id}", flush=True)
 
-        payload['camera_id'] = camera.camera_id
+        if job_id:
+            # ── ШАГ 8а: видео-детекция — камера не нужна ─────────────────
+            payload['source_type'] = 'video'
+            payload['camera_id'] = None
+            print(f"[DB][SKIP] Видео-детекция job_id={job_id}, камера не создаётся", flush=True)
+        else:
+            # ── ШАГ 8б: живая камера — поиск/создание ────────────────────
+            camera = self.camera_repo.get_or_create_by_name(camera_name, location="Камера")
+            if not camera:
+                print(f"[DB][FAIL] Камера '{camera_name}' не найдена и не создана, пропускаем", flush=True)
+                logger.warning(f"Camera '{camera_name}' not found and could not be created, skipping")
+                return
+            print(f"[DB][OK] Камера '{camera_name}' id={camera.camera_id}", flush=True)
+            payload['source_type'] = 'camera'
+            payload['camera_id'] = camera.camera_id
 
         # Запускаем async-метод из синхронного потока через event loop FastAPI
         future = asyncio.run_coroutine_threadsafe(

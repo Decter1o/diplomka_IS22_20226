@@ -1,4 +1,15 @@
-services:
+﻿services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3030:3030"
+    restart: unless-stopped
+    depends_on:
+      - api
+
   mediamtx:
     image: bluenviron/mediamtx:1-ffmpeg
     container_name: mediamtx
@@ -33,7 +44,7 @@ services:
     restart: always
     ports:
       - "9000:9000"   # S3 API
-      - "9001:9001"   # Веб-интерфейс
+      - "9001:9001"   # Р’РµР±-РёРЅС‚РµСЂС„РµР№СЃ
     environment:
       - MINIO_ROOT_USER=${MINIO_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}
@@ -56,6 +67,20 @@ services:
       - broker
       - minio
 
+  ai-service:
+    build:
+      context: ./backend/ai-service
+      dockerfile: Dockerfile
+    container_name: ai-service
+    ports:
+      - "8001:8000"
+    restart: always
+    depends_on:
+      - minio
+      - broker
+    volumes:
+      - ./recordings:/recordings
+
   broker:
     image: apache/kafka:latest
     container_name: broker
@@ -74,3 +99,13 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 3
+
+  broker-ui:
+    container_name:  broker-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 8060:8080
+    environment:
+      DYNAMIC_CONFIG_ENABLED: 'true'
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092

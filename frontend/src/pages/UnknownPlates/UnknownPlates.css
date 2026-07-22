@@ -1,0 +1,399 @@
+.unknown-plates-page {
+  padding: 20px;
+}
+
+.unknown-plates-page h1 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.filter-group label {
+  font-weight: 500;
+  color: #333;
+}
+
+.filter-group select,
+.filter-group input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.filter-group input[type="date"] {
+  width: 140px;
+}
+
+.filter-info {
+  margin-left: auto;
+  font-weight: 500;
+  color: #666;
+}
+
+.loading,
+.no-data {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 16px;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 20px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.unknown-plates-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.unknown-plates-table thead {
+  background: #1a3a5c;
+  color: white;
+}
+
+.unknown-plates-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  border: none;
+}
+
+.unknown-plates-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.unknown-plates-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.plate-number {
+  color: #f44336;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.corrected-number {
+  color: #4caf50;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.plate-thumb {
+  max-width: 60px;
+  max-height: 40px;
+  border-radius: 3px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.source-badge.source-video {
+  color: #0d6efd;
+}
+
+.source-badge.source-camera {
+  color: #6c757d;
+}
+
+.action-col {
+  text-align: center;
+  min-width: 130px;
+}
+
+.btn-action {
+  padding: 6px 16px;
+  background: #1a3a5c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.btn-action:hover {
+  background: #0f2439;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  background: #1a3a5c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #0f2439;
+}
+
+.pagination button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-weight: 500;
+  color: #666;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Modal - centered */
+.plate-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.plate-modal {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border: 3px solid red;
+  min-height: 300px;
+}
+
+.plate-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  background: white;
+}
+
+.plate-modal-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 20px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.plate-modal-content {
+  padding: 20px;
+}
+
+.photo-section {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.photos {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.photos > div {
+  text-align: center;
+}
+
+.photos p {
+  margin: 0 0 10px 0;
+  font-weight: 500;
+  color: #666;
+  font-size: 13px;
+}
+
+.photos img {
+  max-width: 150px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.info-section {
+  padding-top: 20px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.info-row label {
+  font-weight: 500;
+  color: #666;
+}
+
+.info-row span {
+  color: #333;
+  text-align: right;
+}
+
+.input-group {
+  margin: 20px 0;
+}
+
+.input-group label {
+  display: block;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.input-with-btn {
+  display: flex;
+  gap: 10px;
+}
+
+.input-with-btn input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: monospace;
+  text-transform: uppercase;
+}
+
+.input-with-btn input:focus {
+  outline: none;
+  border-color: #1a3a5c;
+}
+
+.result {
+  padding: 15px;
+  border-radius: 4px;
+  margin: 15px 0;
+  font-size: 14px;
+}
+
+.result.found {
+  background: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  color: #2e7d32;
+}
+
+.result.not-found {
+  background: #ffebee;
+  border-left: 4px solid #f44336;
+  color: #c62828;
+}
+
+.result p {
+  margin: 5px 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #174e8a;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #1a3a5c;
+}
+
+.btn-secondary {
+  background: #f0f0f0;
+  color: #bdbdbd;
+  border: 1px solid #ddd;
+}
+
+.btn-secondary:hover {
+  background: #e0e0e0;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -6,6 +6,6 @@ from pydantic import BaseModel
 
 class StolenVehicle(BaseModel):
     id: Optional[UUID] = None
-    plate_number: str
+    plate_id: UUID
     reported_at: Optional[datetime] = None
     description: Optional[str] = None
